@@ -15,10 +15,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/tnistest/config"
+	"github.com/tnistest/internal/http/handlers"
 	"github.com/tnistest/internal/repositories"
 	"github.com/tnistest/internal/services"
 
-	// "github.com/wptest/pkg/kafka"
+	internalHttp "github.com/tnistest/internal/http"
+
 	"github.com/tnistest/pkg/mysql"
 )
 
@@ -78,16 +80,22 @@ func (h *httpCmd) server(cmd *cobra.Command, args []string) (err error) {
 	// init repo
 	accountRepo := repositories.NewAccountRepository(db)
 	balanceRepo := repositories.NewBalanceRepository(db)
+	transactionRepo := repositories.NewTransactionHistory(db)
 
 	accountSvc := services.NewAccountService(accountRepo, balanceRepo)
-	balanceSvc := services.NewBalanceService(balanceRepo)
+	balanceSvc := services.NewBalanceService(balanceRepo, transactionRepo)
+	transactionSvc := services.NewTransactionHistory(transactionRepo)
 
-	messageHandler := handler.NewMessageHandler(messageSvc)
+	accountHandler := handlers.NewAccountHandler(accountSvc)
+	balanceHandler := handlers.NewBalanceHandler(balanceSvc)
+	transactionHandler := handlers.NewTransactionHandler(transactionSvc)
 
 	// inject routes
 	route := &internalHttp.Routes{
-		Config:     h.Config,
-		MsgHandler: messageHandler,
+		Config:             h.Config,
+		AccountHandler:     accountHandler,
+		BalanceHandler:     balanceHandler,
+		TransactionHandler: transactionHandler,
 	}
 	router := route.NewRoutes()
 

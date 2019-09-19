@@ -1,15 +1,13 @@
 package repositories
 
 import (
-	"database/sql"
-
 	"github.com/tnistest/internal/models"
 	"github.com/tnistest/pkg/mysql"
 )
 
 type ITransactionRepository interface {
 	Store(transactionHistory models.TransactionHistory) (lastTransID int64, err error)
-	Get(accountNumber string) []models.TransactionHistory
+	GetByAccount(accountNumber string) (transactionList []models.UserTransactionHistory, err error)
 }
 
 type TransactionRepository struct {
@@ -47,13 +45,13 @@ func (t *TransactionRepository) Store(transactionHistory models.TransactionHisto
 }
 
 func (t *TransactionRepository) GetByAccount(accountNumber string) (transactionList []models.UserTransactionHistory, err error) {
-	db, err := b.DB.GetDB()
+	db, err := t.DB.GetDB()
 	if err != nil {
 		return
 	}
 
-	rows, err := db.Query(`select d.balance, a.account_number from deposit d inner join accounts a on d.account_id = a.id
-		where d.account_id = ?`, accountNumber)
+	rows, err := db.Query(`select t.transaction_amount, t.transaction_type, a.account_number from transaction_history t inner join accounts a
+	on t.account_id = a.id where a.account_number = ?`, accountNumber)
 
 	if err != nil {
 		return
@@ -61,14 +59,14 @@ func (t *TransactionRepository) GetByAccount(accountNumber string) (transactionL
 	for rows.Next() {
 		var transHist models.UserTransactionHistory
 		err = rows.Scan(
-			&transHist.AccountNumber,
 			&transHist.TransactionAmount,
 			&transHist.TransactionType,
+			&transHist.AccountNumber,
 		)
 		transactionList = append(transactionList, transHist)
 	}
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil {
 		return
 	}
-	return balance, nil
+	return transactionList, nil
 }

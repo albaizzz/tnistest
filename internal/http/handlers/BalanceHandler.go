@@ -8,6 +8,7 @@ import (
 
 type IBalanceHandler interface {
 	Get(w http.ResponseWriter, r *http.Request)
+	Transact(w http.ResponseWriter, r *http.Request)
 }
 
 type BalanceHandler struct {

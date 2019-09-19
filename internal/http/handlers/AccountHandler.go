@@ -7,7 +7,7 @@ import (
 )
 
 type IAccountHandler interface {
-	Get(w http.ResponseWriter, r *http.Request)
+	Register(w http.ResponseWriter, r *http.Request)
 }
 
 type AccountHandler struct {
@@ -18,6 +18,6 @@ func NewAccountHandler(accountSvc services.IAccountService) *AccountHandler {
 	return &AccountHandler{AccountSvc: accountSvc}
 }
 
-func (h *BalanceHandler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *AccountHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 }

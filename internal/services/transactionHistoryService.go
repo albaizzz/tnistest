@@ -1,10 +1,10 @@
 package services
 
 import (
-	"database/sql"
-
+	"github.com/tnistest/internal/consts"
 	"github.com/tnistest/internal/models"
 	"github.com/tnistest/internal/repositories"
+	"github.com/tnistest/pkg/helpers"
 )
 
 type ITransactionHistorySvc interface {
@@ -20,25 +20,9 @@ func NewTransactionHistory(transactionRepo repositories.ITransactionRepository) 
 }
 
 func (t *TransactionHistorySvc) GetByAccountNumber(accountNumber string) models.APIResponse {
-	db, err := b.DB.GetDB()
+	transList, err := t.TransactionHistRepo.GetByAccount(accountNumber)
 	if err != nil {
-		return
+		return helpers.GetAPIResponse(consts.APIErrorUnknown, nil)
 	}
-
-	rows, err := db.Query(`select d.balance, a.account_number from deposit d inner join accounts a on d.account_id = a.id
-		where d.account_id = ?`, accountID)
-
-	if err != nil {
-		return
-	}
-	for rows.Next() {
-		err = rows.Scan(
-			&balance.Balance,
-			&balance.AccountNumber,
-		)
-	}
-	if err != nil && err != sql.ErrNoRows {
-		return
-	}
-	return balance, nil
+	return helpers.GetAPIResponse(consts.APIGeneralSuccess, transList)
 }

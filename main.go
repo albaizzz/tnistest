@@ -1,18 +1,16 @@
 package main
 
-
 import (
+	"os"
+
 	"github.com/spf13/pflag"
 	"github.com/tnistest/cmd"
 	"github.com/tnistest/config"
-	"os"
-	"runtime"
 
 	_ "github.com/pressly/goose"
 )
 
-func main()
-{
+func main() {
 	var filename string
 	root := cmd.RootCmd()
 	fs := pflag.NewFlagSet("Root", pflag.ContinueOnError)
@@ -26,11 +24,6 @@ func main()
 	configuration := config.New(filename, cmd.ConfigPath...)
 	root.AddCommand(
 		cmd.NewHttpCmd(
-			configuration,
-		).BaseCmd,
-	)
-	root.AddCommand(
-		cmd.NewConsumerCmd(
 			configuration,
 		).BaseCmd,
 	)
